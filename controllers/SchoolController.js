@@ -4,9 +4,9 @@ import School from "../models/SchoolModel.js";
 // POST
 // Create school
 export const createSchool = async (req, res) => {
-  const { name } = req.body;
+  const { name, address } = req.body;
   try {
-    const newSchool = await School.create({ name });
+    const newSchool = await School.create({ name, address });
 
     if (newSchool) {
       res.status(201).json(newSchool);
@@ -72,7 +72,7 @@ export const deleteSchool = async (req, res) => {
 // UPDATE
 export const updateSchool = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, address } = req.body;
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ error: "Invalid id" });
@@ -81,6 +81,7 @@ export const updateSchool = async (req, res) => {
     const query = await School.findOneAndUpdate({
       _id: id,
       name: name,
+      address: address,
     });
 
     if (!query) {

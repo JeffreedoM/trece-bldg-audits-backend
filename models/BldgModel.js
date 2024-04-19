@@ -6,6 +6,14 @@ const buildingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    school: {
+      type: String,
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
     year_established: {
       type: Number,
     },
