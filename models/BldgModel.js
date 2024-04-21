@@ -10,15 +10,12 @@ const buildingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    address: {
-      type: String,
-      required: true,
-    },
     year_established: {
       type: Number,
     },
     location: {
       type: String,
+      required: true,
     },
     storey: {
       type: Number,
@@ -45,7 +42,7 @@ const buildingSchema = new mongoose.Schema(
       type: String,
     },
     compliance: {
-      type: String,
+      type: Number,
     },
     mitigation_actions: {
       type: String,

@@ -29,4 +29,6 @@ mongoose
 // routes
 
 import SchoolRoutes from "./routes/SchoolRoutes.js";
+import BldgRoutes from "./routes/BldgRoutes.js";
 app.use("/schools", SchoolRoutes);
+app.use("/", BldgRoutes);
