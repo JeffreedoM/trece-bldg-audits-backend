@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 
 const buildingSchema = new mongoose.Schema(
   {
+    image: {
+      type: String,
+    },
     name: {
       type: String,
       required: true,
@@ -38,11 +41,14 @@ const buildingSchema = new mongoose.Schema(
     vulnerability: {
       type: String,
     },
-    physical_condition: {
+    physical_conditions: {
       type: String,
     },
     compliance: {
       type: Number,
+    },
+    remarks: {
+      type: String,
     },
     mitigation_actions: {
       type: String,
