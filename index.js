@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import bodyParser from "body-parser";
+import requireAuth from "./middleware/requireAuth.js";
 
 const app = express();
 
@@ -32,5 +33,10 @@ mongoose
 
 import SchoolRoutes from "./routes/SchoolRoutes.js";
 import BldgRoutes from "./routes/BldgRoutes.js";
+import UserRoutes from "./routes/user.js";
+
+app.use("/user", UserRoutes);
+// app.use(requireAuth);
+
 app.use("/schools", SchoolRoutes);
 app.use("/", BldgRoutes);
