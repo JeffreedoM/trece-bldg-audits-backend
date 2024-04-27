@@ -161,6 +161,65 @@ export const editBldgImage = async (req, res) => {
   }
 };
 
+// Edit Bldg
+export const editBldg = async (req, res) => {
+  const {
+    name,
+    school,
+    address,
+    location,
+    storey,
+    building_type,
+    structure_type,
+    occupancy,
+    rvs_score,
+    vulnerability,
+    physical_conditions,
+    compliance,
+    remarks,
+    mitigation_actions,
+  } = req.body;
+  const { id } = req.params;
+
+  try {
+    // const existingBldg = await Bldg.findOne({ name });
+    // if (existingBldg) {
+    //   return res.status(400).json({ error: "Building name already exists" });
+    // }
+
+    const updatedBldg = await Bldg.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          name: name,
+          school: school,
+          address: address,
+          location: location,
+          storey: storey,
+          building_type: building_type,
+          structure_type: structure_type,
+          occupancy: occupancy,
+          rvs_score: rvs_score,
+          vulnerability: vulnerability,
+          physical_conditions: physical_conditions,
+          compliance: compliance,
+          remarks: remarks,
+          mitigation_actions: mitigation_actions,
+        },
+      },
+      { new: true }
+    );
+
+    if (updatedBldg) {
+      return res.status(201).json(updatedBldg);
+    } else {
+      return res.status(400).json({ error: "Error editing building" });
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 // GET
 // GEt all bldgs
 export const getAllBldgs = async (req, res) => {
