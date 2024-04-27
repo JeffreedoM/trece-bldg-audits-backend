@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import validator from "validator";
 
 const userSchema = new mongoose.Schema({
-  email: {
+  username: {
     type: String,
     required: true,
     unique: true,
@@ -15,27 +15,24 @@ const userSchema = new mongoose.Schema({
 });
 
 // static signup method
-userSchema.statics.signup = async function (email, password) {
+userSchema.statics.signup = async function (username, password) {
   // validations
-  if (!email || !password) {
+  if (!username || !password) {
     throw Error("All fields must be filled");
   }
-  if (!validator.isEmail(email)) {
-    throw Error("Email is not valid");
-  }
-  if (!validator.isStrongPassword(password)) {
-    throw Error(
-      "Password must be at least 8 characters long and includes at least 1 uppercase letter, 1 number, and 1 special symbol"
-    );
-  }
+  // if (!validator.isStrongPassword(password)) {
+  //   throw Error(
+  //     "Password must be at least 8 characters long and includes at least 1 uppercase letter, 1 number, and 1 special symbol"
+  //   );
+  // }
 
-  // 1. search in the db if the email already exists
-  const exists = await this.findOne({ email });
+  // 1. search in the db if the username already exists
+  const exists = await this.findOne({ username });
 
   // 2. If it already exists, it will throw an error
   if (exists) {
     throw Error(
-      "Email is already in use. Please use a different email or consider logging in if this is your account"
+      "Username is already in use. Please use a different username or consider logging in if this is your account"
     );
   }
 
@@ -45,25 +42,23 @@ userSchema.statics.signup = async function (email, password) {
   // 4. hash the password
   const hash = await bcrypt.hash(password, salt);
 
-  // 5. Store the email and the hashed password
-  const user = await this.create({ email, password: hash });
+  // 5. Store the username and the hashed password
+  const user = await this.create({ username, password: hash });
 
   // 6. Return the newly created user
   return user;
 };
 
 // static login method
-userSchema.statics.login = async function (email, password) {
-  if (!email || !password) {
+userSchema.statics.login = async function (username, password) {
+  if (!username || !password) {
     throw Error("All fields must be filled");
   }
 
-  const user = await this.findOne({ email });
+  const user = await this.findOne({ username });
 
   if (!user) {
-    throw Error(
-      "No account found with this email address. Please double-check your email or consider signing up if you don't have an account."
-    );
+    throw Error("No account found with this username.");
   }
 
   // match password to password in db
