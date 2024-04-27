@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createBldg,
+  editBldgImage,
   getAllBldgs,
   getOneBldg,
   uploadBldgImage,
@@ -12,7 +13,8 @@ import { upload } from "../utils/multer.js";
 // POST
 // router.post("/", upload.single("file"), createBldg);
 router.post("/", upload.single("image"), createBldg);
-router.post("/upload", upload.single("file"), uploadBldgImage);
+router.put("/edit-bldg-image/:id", upload.single("image"), editBldgImage);
+// router.post("/upload", upload.single("file"), uploadBldgImage);
 
 // GET
 router.get("/", getAllBldgs);
