@@ -13,7 +13,7 @@ const buildingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    year_established: {
+    year: {
       type: Number,
     },
     location: {
@@ -32,7 +32,7 @@ const buildingSchema = new mongoose.Schema(
     structure_type: {
       type: String,
     },
-    design: {
+    occupancy: {
       type: String,
     },
     rvs_score: {
