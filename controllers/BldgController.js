@@ -129,33 +129,43 @@ export const editBldgImage = async (req, res) => {
       const imagePath = image.path;
 
       // delete image in cloudinary
-      const deleteImage = await cloudinary.uploader.destroy(building.image);
-
-      if (deleteImage) {
-        // upload the image
-        const uploadImg = await cloudinary.uploader.upload(imagePath, {
-          folder: "trece-building-audits",
-        });
-        // get the public id from cloudinary
-        const public_id = uploadImg.public_id;
-
-        // Update image to db
-        const updateImagetoDB = await Bldg.findOneAndUpdate(
-          { _id: building.id }, // Filter by the building's _id
-          { $set: { image: public_id } }, // Update the image field with the public_id
-          { new: true } // Return the updated document
-        );
-
-        if (updateImagetoDB) {
-          fs.unlink(imagePath, (err) => {
-            if (err) {
-              console.error("Error deleting file:", err);
-            } else {
-              console.log("File deleted successfully");
-            }
-          });
-          return res.status(200).json("Successfully updated image");
+      if (building.image) {
+        try {
+          const deleteImage = await cloudinary.uploader.destroy(building.image);
+          if (deleteImage.result !== "ok") {
+            throw new Error("Error deleting image in Cloudinary");
+          }
+        } catch (error) {
+          console.error("Error deleting image:", error);
+          // Handle error deleting image
+          return res
+            .status(400)
+            .json({ error: "Error deleting image in Cloudinary" });
         }
+      }
+
+      const uploadImg = await cloudinary.uploader.upload(imagePath, {
+        folder: "trece-building-audits",
+      });
+      // get the public id from cloudinary
+      const public_id = uploadImg.public_id;
+      console.log("public id: ", public_id);
+      // Update image to db
+      const updateImagetoDB = await Bldg.findOneAndUpdate(
+        { _id: building.id }, // Filter by the building's _id
+        { $set: { image: public_id } }, // Update the image field with the public_id
+        { new: true } // Return the updated document
+      );
+
+      if (updateImagetoDB) {
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.error("Error deleting file:", err);
+          } else {
+            console.log("File deleted successfully");
+          }
+        });
+        return res.status(200).json("Successfully updated image");
       }
     }
   } catch (error) {
