@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createBldg,
+  deleteBldg,
   editBldg,
   editBldgImage,
   getAllBldgs,
@@ -23,5 +24,8 @@ router.put("/edit/:id", editBldg);
 // GET
 router.get("/", getAllBldgs);
 router.get("/:id", getOneBldg);
+
+// DELETE
+router.delete("/:id", deleteBldg);
 
 export default router;

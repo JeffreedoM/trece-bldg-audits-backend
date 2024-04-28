@@ -268,3 +268,24 @@ export const getOneBldg = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// Delete building
+// DELETE
+export const deleteBldg = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: "Invalid id" });
+    }
+
+    const query = await Bldg.findOneAndDelete({ _id: id });
+
+    if (query) {
+      res.status(201).json(query);
+    } else {
+      res.status(400).json({ error: "No such building" });
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
