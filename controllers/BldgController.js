@@ -269,6 +269,31 @@ export const getOneBldg = async (req, res) => {
   }
 };
 
+// Get buildings by school
+export const getBldgsBySchool = async (req, res) => {
+  const { school } = req.query;
+  try {
+    const existingBldg = await Bldg.findOne({ school });
+    if (!existingBldg) {
+      return res
+        .status(400)
+        .json({ error: "No buildings found for the provided school" });
+    }
+
+    const query = await Bldg.find({ school });
+
+    if (query) {
+      res.status(200).json(query);
+    } else {
+      res.status(400).json({
+        error: "No records existed.",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Get building count for school
 export const getBldgCount = async (req, res) => {
   try {
