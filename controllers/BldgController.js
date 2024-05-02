@@ -269,6 +269,26 @@ export const getOneBldg = async (req, res) => {
   }
 };
 
+// Get building count for school
+export const getBldgCount = async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $group: {
+          _id: "$school", // Group by the name field
+          count: { $sum: 1 }, // Count the occurrences of each name
+        },
+      },
+    ];
+
+    const result = await Bldg.aggregate(pipeline);
+
+    res.status(200).json(result);
+  } catch (error) {
+    // res.status(500).json({ error: error.message });
+  }
+};
+
 // Delete building
 // DELETE
 export const deleteBldg = async (req, res) => {

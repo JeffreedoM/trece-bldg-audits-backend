@@ -5,6 +5,7 @@ import {
   editBldg,
   editBldgImage,
   getAllBldgs,
+  getBldgCount,
   getOneBldg,
   uploadBldgImage,
 } from "../controllers/BldgController.js";
@@ -22,8 +23,9 @@ router.put("/edit-bldg-image/:id", upload.single("image"), editBldgImage);
 router.put("/edit/:id", editBldg);
 
 // GET
-router.get("/", getAllBldgs);
+router.get("/schoolsWithCount", getBldgCount);
 router.get("/:id", getOneBldg);
+router.get("/", getAllBldgs);
 
 // DELETE
 router.delete("/:id", deleteBldg);
