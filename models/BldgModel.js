@@ -53,6 +53,9 @@ const buildingSchema = new mongoose.Schema(
     mitigation_actions: {
       type: String,
     },
+    defects: {
+      type: [String],
+    },
   },
   { timestamps: true }
 );
