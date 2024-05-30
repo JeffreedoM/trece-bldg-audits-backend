@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Bldg from "../models/BldgModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import streamifier from "streamifier";
 
 cloudinary.config({
   cloud_name: "dogpte0qt",
@@ -10,6 +11,94 @@ cloudinary.config({
 });
 // POST
 // Create Bldg
+// export const createBldg = async (req, res) => {
+//   const {
+//     name,
+//     school,
+//     address,
+//     year,
+//     location,
+//     storey,
+//     building_type,
+//     structure_type,
+//     occupancy,
+//     rvs_score,
+//     vulnerability,
+//     physical_conditions,
+//     compliance,
+//     remarks,
+//     mitigation_actions,
+//   } = req.body;
+
+//   try {
+//     const existingBldg = await Bldg.findOne({ name });
+//     if (existingBldg) {
+//       return res.status(400).json({ error: "Building name already exists" });
+//     }
+
+//     const newBldg = await Bldg.create({
+//       name,
+//       school,
+//       address,
+//       year,
+//       location,
+//       storey,
+//       building_type,
+//       structure_type,
+//       occupancy,
+//       rvs_score,
+//       vulnerability,
+//       physical_conditions,
+//       compliance,
+//       remarks,
+//       mitigation_actions,
+//     });
+
+//     if (newBldg) {
+//       console.log("newBldg");
+//       console.log("newBldgId:", newBldg.id);
+//       if (req.file) {
+//         console.log("both exists");
+//         const image = req.file;
+//         console.log(image);
+//         const imagePath = image.path;
+//         const uploadImg = await cloudinary.uploader.upload(imagePath, {
+//           folder: "trece-building-audits",
+//         });
+//         const public_id = uploadImg.public_id;
+//         console.log("yes may image");
+//         console.log("public id:", public_id);
+
+//         // Insert image to db
+//         const insertImagetoDB = await Bldg.findOneAndUpdate(
+//           { _id: newBldg.id }, // Filter by the building's _id
+//           { $set: { image: public_id } }, // Update the image field with the public_id
+//           { new: true } // Return the updated document
+//         );
+//         if (uploadImg && insertImagetoDB) {
+//           fs.unlink(imagePath, (err) => {
+//             if (err) {
+//               console.error("Error deleting file:", err);
+//             } else {
+//               console.log("File deleted successfully");
+//             }
+//           });
+//           return res
+//             .status(200)
+//             .json(
+//               "Successfully uploaded img to cloudinary, and inserted id to DB"
+//             );
+//         }
+//       }
+//       return res.status(201).json(newBldg);
+//     } else {
+//       return res.status(400).json({ error: "Error creating building" });
+//     }
+//   } catch (error) {
+//     return res.status(400).json({ error: error.message });
+//   }
+// };
+
 export const createBldg = async (req, res) => {
   const {
     name,
@@ -60,11 +149,24 @@ export const createBldg = async (req, res) => {
         console.log("both exists");
         const image = req.file;
         console.log(image);
-        const imagePath = image.path;
-        const uploadImg = await cloudinary.uploader.upload(imagePath, {
-          folder: "trece-building-audits",
+
+        // Upload image to Cloudinary from buffer
+        const uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "trece-building-audits" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+
+          streamifier.createReadStream(image.buffer).pipe(uploadStream);
         });
-        const public_id = uploadImg.public_id;
+
+        const public_id = uploadResult.public_id;
         console.log("yes may image");
         console.log("public id:", public_id);
 
@@ -74,18 +176,11 @@ export const createBldg = async (req, res) => {
           { $set: { image: public_id } }, // Update the image field with the public_id
           { new: true } // Return the updated document
         );
-        if (uploadImg && insertImagetoDB) {
-          fs.unlink(imagePath, (err) => {
-            if (err) {
-              console.error("Error deleting file:", err);
-            } else {
-              console.log("File deleted successfully");
-            }
-          });
+        if (uploadResult && insertImagetoDB) {
           return res
             .status(200)
             .json(
-              "Successfully uploaded img to cloudinary, and inserted id to DB"
+              "Successfully uploaded img to Cloudinary, and inserted id to DB"
             );
         }
       }
@@ -99,24 +194,102 @@ export const createBldg = async (req, res) => {
 };
 
 // Upload Building Image
-export const uploadBldgImage = async (req, res) => {
-  const file = req.file.path;
-  try {
-    const uploadImg = await cloudinary.uploader.upload(file);
+// export const uploadBldgImage = async (req, res) => {
+//   const file = req.file.path;
+//   try {
+//     const uploadImg = await cloudinary.uploader.upload(file);
 
-    if (uploadImg) {
+//     if (uploadImg) {
+//       return res.status(200).send({ message: "Successfully uploaded image" });
+//     }
+
+//   } catch (error) {
+//     return res.status(400).json({ error: error.message, file: file });
+//   }
+// };
+
+export const uploadBldgImage = async (req, res) => {
+  const file = req.file;
+
+  try {
+    // Upload image to Cloudinary from buffer
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "trece-building-audits" },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    });
+
+    if (uploadResult) {
       return res.status(200).send({ message: "Successfully uploaded image" });
     }
-
-    // const { file } = req.body;
-    // const uploadedImg = req.file;
-    // return res
-    //   .status(200)
-    //   .send({ message: "Successfully uploaded image", uploadedImg });
   } catch (error) {
-    return res.status(400).json({ error: error.message, file: file });
+    return res.status(400).json({ error: error.message });
   }
 };
+
+// export const editBldgImage = async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     const building = await Bldg.findById(id);
+
+//     if (req.file) {
+//       const image = req.file;
+//       const imagePath = image.path;
+
+//       // delete image in cloudinary
+//       if (building.image) {
+//         try {
+//           const deleteImage = await cloudinary.uploader.destroy(building.image);
+//           if (deleteImage.result !== "ok") {
+//             throw new Error("Error deleting image in Cloudinary");
+//           }
+//         } catch (error) {
+//           console.error("Error deleting image:", error);
+//           // Handle error deleting image
+//           return res
+//             .status(400)
+//             .json({ error: "Error deleting image in Cloudinary" });
+//         }
+//       }
+
+//       const uploadImg = await cloudinary.uploader.upload(imagePath, {
+//         folder: "trece-building-audits",
+//       });
+//       // get the public id from cloudinary
+//       const public_id = uploadImg.public_id;
+//       console.log("public id: ", public_id);
+//       // Update image to db
+//       const updateImagetoDB = await Bldg.findOneAndUpdate(
+//         { _id: building.id }, // Filter by the building's _id
+//         { $set: { image: public_id } }, // Update the image field with the public_id
+//         { new: true } // Return the updated document
+//       );
+
+//       if (updateImagetoDB) {
+//         fs.unlink(imagePath, (err) => {
+//           if (err) {
+//             console.error("Error deleting file:", err);
+//           } else {
+//             console.log("File deleted successfully");
+//           }
+//         });
+//         return res.status(200).json("Successfully updated image");
+//       }
+//     }
+//   } catch (error) {
+//     return res.status(400).json({ error: error.message });
+//   }
+// };
 
 export const editBldgImage = async (req, res) => {
   const { id } = req.params;
@@ -126,30 +299,48 @@ export const editBldgImage = async (req, res) => {
 
     if (req.file) {
       const image = req.file;
-      const imagePath = image.path;
+      console.log(req.file);
 
       // delete image in cloudinary
       if (building.image) {
+        console.log(building.image);
         try {
           const deleteImage = await cloudinary.uploader.destroy(building.image);
-          if (deleteImage.result !== "ok") {
-            throw new Error("Error deleting image in Cloudinary");
+          console.log("Cloudinary delete response:", deleteImage);
+          if (
+            deleteImage.result !== "ok" &&
+            deleteImage.result !== "not found"
+          ) {
+            throw new Error("Error deleting image in Cloudinary 1");
           }
         } catch (error) {
           console.error("Error deleting image:", error);
-          // Handle error deleting image
           return res
             .status(400)
-            .json({ error: "Error deleting image in Cloudinary" });
+            .json({ error: "Error deleting image in Cloudinary 2" });
         }
       }
 
-      const uploadImg = await cloudinary.uploader.upload(imagePath, {
-        folder: "trece-building-audits",
+      // Upload new image to Cloudinary from buffer
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: "trece-building-audits" },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        streamifier.createReadStream(image.buffer).pipe(uploadStream);
       });
+
       // get the public id from cloudinary
-      const public_id = uploadImg.public_id;
+      const public_id = uploadResult.public_id;
       console.log("public id: ", public_id);
+
       // Update image to db
       const updateImagetoDB = await Bldg.findOneAndUpdate(
         { _id: building.id }, // Filter by the building's _id
@@ -158,15 +349,10 @@ export const editBldgImage = async (req, res) => {
       );
 
       if (updateImagetoDB) {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            console.error("Error deleting file:", err);
-          } else {
-            console.log("File deleted successfully");
-          }
-        });
         return res.status(200).json("Successfully updated image");
       }
+    } else {
+      return res.status(400).json({ error: "No image file provided" });
     }
   } catch (error) {
     return res.status(400).json({ error: error.message });
